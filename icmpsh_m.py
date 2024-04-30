@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 #  icmpsh - simple icmp command shell (port of icmpsh-m.pl written in
 #  Perl by Nico Leidecker <nico@leidecker.info>)
@@ -37,7 +37,7 @@ def setNonBlocking(fd):
     fcntl.fcntl(fd, fcntl.F_SETFL, flags)
 
 def main(src, dst):
-    if subprocess.mswindows:
+    if 'mswindows' in subprocess.__dict__:
         sys.stderr.write('icmpsh master can only run on Posix systems\n')
         sys.exit(255)
 
@@ -57,7 +57,7 @@ def main(src, dst):
     # with the returned data
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
-    except socket.error, e:
+    except socket.error as e:
         sys.stderr.write('You need to run icmpsh master with administrator privileges\n')
         sys.exit(1)
 
@@ -100,7 +100,7 @@ def main(src, dst):
                 data = icmppacket.get_data_as_string()
 
                 if len(data) > 0:
-                    sys.stdout.write(data)
+                    sys.stdout.write(data.decode() if isinstance(data, bytes) else data)
 
                 # Parse command from standard input
                 try:
@@ -116,7 +116,7 @@ def main(src, dst):
                 icmp.set_icmp_seq(seq_id)
 
                 # Include the command as data inside the ICMP packet
-                icmp.contains(ImpactPacket.Data(cmd))
+                icmp.contains(ImpactPacket.Data(bytes(cmd.encode())))
 
                 # Calculate its checksum
                 icmp.set_icmp_cksum(0)
